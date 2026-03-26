@@ -1,20 +1,4 @@
-import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
+// AppModule é obsoleto em Angular Standalone
+// Este arquivo não é mais necessário e será removido em futuras atualizações
 
-import { AppRoutingModule } from './app-routing-module';
-import { App } from './app';
-
-@NgModule({
-  declarations: [
-    App
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule
-  ],
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-  ],
-  bootstrap: [App]
-})
-export class AppModule { }
+export class AppModule {}
