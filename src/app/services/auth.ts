@@ -19,4 +19,24 @@ export class AuthService {
 
     return this.http.get(`${this.apiUrl}/assets/dashboard`, { headers });
   }
+
+  // Método para listar ativos
+  listarAtivos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/assets`);
+  }
+
+  // Método para salvar um novo ativo
+  salvarAtivo(asset: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/assets`, asset);
+  }
+
+  // Método para atualizar um ativo existente
+  atualizarAtivo(id: number, asset: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/assets/${id}`, asset);
+  }
+
+  // Método para excluir um ativo
+  excluirAtivo(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/assets/${id}`);
+  }
 }
