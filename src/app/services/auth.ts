@@ -2,6 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface DashboardStats {
+  total_ativos: number;
+  disponivel: number;
+  em_uso: number;
+}
+
+export interface Funcionario {
+  id: number;
+  nome: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -9,6 +20,16 @@ export class AuthService {
   private apiUrl = 'http://localhost:8080/api'; // URL do seu Spring Boot
 
   constructor(private http: HttpClient) {}
+
+  // Método para obter estatísticas do dashboard
+  getDashboardStats(): Observable<DashboardStats> {
+    return this.http.get<DashboardStats>(`${this.apiUrl}/assets/dashboard`);
+  }
+
+  // Método para obter lista de funcionários
+  getFuncionarios(): Observable<Funcionario[]> {
+    return this.http.get<Funcionario[]>(`${this.apiUrl}/funcionarios`);
+  }
 
   // Método para testar a conexão com o usuário que criamos no banco
   testarLogin(login: string, senha: string): Observable<any> {

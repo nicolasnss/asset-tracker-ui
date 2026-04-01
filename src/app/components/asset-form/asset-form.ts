@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../../services/auth';
+import { AuthService, Funcionario } from '../../services/auth';
 
 interface Asset {
   id?: number;
@@ -15,6 +15,7 @@ interface Asset {
   tipo: string;
   status: string;
   descricao: string;
+  funcionarioId?: number;
 }
 
 @Component({
@@ -76,6 +77,18 @@ interface Asset {
         </mat-form-field>
 
         <mat-form-field appearance="fill">
+          <mat-label>Responsável</mat-label>
+          <mat-select formControlName="funcionarioId" required>
+            <mat-option *ngFor="let funcionario of funcionarios" [value]="funcionario.id">
+              {{ funcionario.nome }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="assetForm.get('funcionarioId')?.invalid && assetForm.get('funcionarioId')?.touched">
+            Responsável é obrigatório
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
           <mat-label>Descrição</mat-label>
           <textarea matInput formControlName="descricao" rows="3"></textarea>
         </mat-form-field>
@@ -87,8 +100,9 @@ interface Asset {
     </mat-dialog-actions>
   `,
 })
-export class AssetFormComponent {
+export class AssetFormComponent implements OnInit {
   assetForm: FormGroup;
+  funcionarios: Funcionario[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -101,7 +115,23 @@ export class AssetFormComponent {
       tagPatrimonio: [data?.tagPatrimonio || '', Validators.required],
       tipo: [data?.tipo || '', Validators.required],
       status: [data?.status || '', Validators.required],
-      descricao: [data?.descricao || '']
+      descricao: [data?.descricao || ''],
+      funcionarioId: [data?.funcionarioId || '', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadFuncionarios();
+  }
+
+  loadFuncionarios(): void {
+    this.authService.getFuncionarios().subscribe({
+      next: (funcionarios: Funcionario[]) => {
+        this.funcionarios = funcionarios;
+      },
+      error: (erro: any) => {
+        console.error('ERRO AO CARREGAR FUNCIONÁRIOS:', erro);
+      }
     });
   }
 
