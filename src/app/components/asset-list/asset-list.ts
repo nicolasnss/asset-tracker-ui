@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -62,6 +62,8 @@ export class AssetListComponent implements OnInit {
 
   dataSource: Asset[] = [];
 
+  @Output() refreshStats = new EventEmitter<void>();
+
   constructor(private authService: AuthService, private cdr: ChangeDetectorRef, private dialog: MatDialog) {}
 
   ngOnInit(): void {
@@ -84,6 +86,7 @@ export class AssetListComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadAssets(); // Recarrega a lista após salvar
+        this.refreshStats.emit();
       }
     });
   }
@@ -96,6 +99,7 @@ export class AssetListComponent implements OnInit {
     if (confirm('Tem certeza que deseja excluir este ativo?')) {
       this.authService.excluirAtivo(asset.id).subscribe(() => {
         this.loadAssets(); // Recarrega a lista após excluir
+        this.refreshStats.emit();
       });
     }
   }

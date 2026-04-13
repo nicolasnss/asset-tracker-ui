@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService, DashboardStats } from './services/auth';
+import { CorsLoggerService } from './services/cors-logger.service';
 
 // Importando os seus novos componentes
 import { NavbarComponent } from './components/navbar/navbar';
@@ -34,7 +35,7 @@ import { AssetListComponent } from './components/asset-list/asset-list';
         </div>
       </div>
 
-      <app-asset-list></app-asset-list>
+      <app-asset-list (refreshStats)="loadStats()"></app-asset-list>
     </div>
 
     <router-outlet></router-outlet>
@@ -44,10 +45,17 @@ import { AssetListComponent } from './components/asset-list/asset-list';
 export class App implements OnInit {
   stats: DashboardStats | null = null;
 
-  constructor(private authService: AuthService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private corsLogger: CorsLoggerService
+  ) {}
 
   ngOnInit() {
     console.log('--- TESTE DE INTEGRAÇÃO INICIADO ---');
+
+    // Mostrar configuração CORS esperada no console
+    this.corsLogger.logCorsConfiguration();
 
     // Chama o método para obter estatísticas do dashboard
     this.authService.getDashboardStats().subscribe({
@@ -69,6 +77,19 @@ export class App implements OnInit {
       },
       error: (erro: any) => {
         console.error('ERRO DE CONEXÃO NO APP.TS:', erro);
+      },
+    });
+  }
+
+  loadStats() {
+    this.authService.getDashboardStats().subscribe({
+      next: (stats: DashboardStats) => {
+        this.stats = stats;
+        this.cdr.detectChanges();
+        console.log('Estatísticas atualizadas:', stats);
+      },
+      error: (erro: any) => {
+        console.error('ERRO AO ATUALIZAR ESTATÍSTICAS:', erro);
       },
     });
   }

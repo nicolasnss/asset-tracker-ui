@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService, Funcionario } from '../../services/auth';
 
@@ -28,6 +29,7 @@ interface Asset {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatSnackBarModule,
     ReactiveFormsModule
   ],
   template: `
@@ -47,6 +49,9 @@ interface Asset {
           <input matInput formControlName="tagPatrimonio" required>
           <mat-error *ngIf="assetForm.get('tagPatrimonio')?.invalid && assetForm.get('tagPatrimonio')?.touched">
             Tag de Patrimônio é obrigatória
+          </mat-error>
+          <mat-error *ngIf="assetForm.get('tagPatrimonio')?.hasError('duplicate')">
+            Tag de Patrimônio já existe
           </mat-error>
         </mat-form-field>
 
@@ -108,6 +113,7 @@ export class AssetFormComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private dialogRef: MatDialogRef<AssetFormComponent>,
+    private snackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: Asset | null
   ) {
     this.assetForm = this.fb.group({
@@ -140,13 +146,33 @@ export class AssetFormComponent implements OnInit {
       const asset = this.assetForm.value;
       if (this.data?.id) {
         // Editar
-        this.authService.atualizarAtivo(this.data.id, asset).subscribe(() => {
-          this.dialogRef.close(true);
+        this.authService.atualizarAtivo(this.data.id, asset).subscribe({
+          next: () => {
+            this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', { duration: 3000 });
+            this.dialogRef.close(true);
+          },
+          error: (erro: any) => {
+            if (erro.error?.message?.includes('Tag Duplicada')) {
+              this.assetForm.get('tagPatrimonio')?.setErrors({ duplicate: true });
+            } else {
+              console.error('Erro ao atualizar ativo:', erro);
+            }
+          }
         });
       } else {
         // Criar
-        this.authService.salvarAtivo(asset).subscribe(() => {
-          this.dialogRef.close(true);
+        this.authService.salvarAtivo(asset).subscribe({
+          next: () => {
+            this.snackBar.open('Ativo vinculado com sucesso!', 'Fechar', { duration: 3000 });
+            this.dialogRef.close(true);
+          },
+          error: (erro: any) => {
+            if (erro.error?.message?.includes('Tag Duplicada')) {
+              this.assetForm.get('tagPatrimonio')?.setErrors({ duplicate: true });
+            } else {
+              console.error('Erro ao salvar ativo:', erro);
+            }
+          }
         });
       }
     }

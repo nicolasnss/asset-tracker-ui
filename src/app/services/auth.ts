@@ -2,38 +2,71 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+/**
+ * Interface para estatísticas do dashboard
+ */
 export interface DashboardStats {
   total_ativos: number;
   disponivel: number;
   em_uso: number;
 }
 
+/**
+ * Interface para dados de funcionário
+ */
 export interface Funcionario {
   id: number;
   nome: string;
 }
 
+/**
+ * Serviço de autenticação e gerenciamento de ativos.
+ *
+ * NOTA IMPORTANTE: Todas as requisições HTTP para localhost:8080 incluem
+ * automaticamente withCredentials: true via HttpCredentialsInterceptor.
+ * Não é necessário adicionar manualmente em cada chamada.
+ *
+ * @see HttpCredentialsInterceptor
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api'; // URL do seu Spring Boot
+  /**
+   * URL base da API do backend Spring Boot.
+   * Sem barra no final para evitar duplicação ao concatenar com rotas.
+   */
+  private apiUrl = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient) {}
 
-  // Método para obter estatísticas do dashboard
+  /**
+   * Obtém estatísticas do dashboard (total de ativos, disponíveis, em uso)
+   *
+   * @returns Observable<DashboardStats> - Estatísticas do dashboard
+   */
   getDashboardStats(): Observable<DashboardStats> {
     return this.http.get<DashboardStats>(`${this.apiUrl}/assets/dashboard`);
   }
 
-  // Método para obter lista de funcionários
+  /**
+   * Obtém lista de todos os funcionários
+   *
+   * @returns Observable<Funcionario[]> - Lista de funcionários
+   */
   getFuncionarios(): Observable<Funcionario[]> {
     return this.http.get<Funcionario[]>(`${this.apiUrl}/funcionarios`);
   }
 
-  // Método para testar a conexão com o usuário que criamos no banco
+  /**
+   * Testa a conexão com o backend usando autenticação básica (Basic Auth)
+   *
+   * @param login - Nome de usuário
+   * @param senha - Senha do usuário
+   * @returns Observable<any> - Resposta do servidor
+   */
   testarLogin(login: string, senha: string): Observable<any> {
-    // Criamos o header de autenticação básica (Basic Auth)
+    // Criar header de autenticação básica (Basic Auth)
     const headers = new HttpHeaders({
       authorization: 'Basic ' + btoa(login + ':' + senha),
     });
@@ -41,22 +74,42 @@ export class AuthService {
     return this.http.get(`${this.apiUrl}/assets/dashboard`, { headers });
   }
 
-  // Método para listar ativos
+  /**
+   * Lista todos os ativos do sistema
+   *
+   * @returns Observable<any> - Lista paginada de ativos
+   */
   listarAtivos(): Observable<any> {
     return this.http.get(`${this.apiUrl}/assets`);
   }
 
-  // Método para salvar um novo ativo
+  /**
+   * Cria um novo ativo no sistema
+   *
+   * @param asset - Dados do ativo a ser criado
+   * @returns Observable<any> - Ativo criado com ID gerado
+   */
   salvarAtivo(asset: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/assets`, asset);
   }
 
-  // Método para atualizar um ativo existente
+  /**
+   * Atualiza um ativo existente
+   *
+   * @param id - ID do ativo a ser atualizado
+   * @param asset - Novos dados do ativo
+   * @returns Observable<any> - Ativo atualizado
+   */
   atualizarAtivo(id: number, asset: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/assets/${id}`, asset);
   }
 
-  // Método para excluir um ativo
+  /**
+   * Exclui um ativo do sistema
+   *
+   * @param id - ID do ativo a ser excluído
+   * @returns Observable<any> - Confirmação de exclusão
+   */
   excluirAtivo(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/assets/${id}`);
   }
